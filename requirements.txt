@@ -3,4 +3,5 @@ speechrecognition
 pyttsx3
 langdetect
 serpapi
+googlesearch
 waitress
