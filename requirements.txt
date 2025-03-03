@@ -2,6 +2,5 @@ Flask
 speechrecognition
 pyttsx3
 langdetect
-serpapi
-googlesearch
+google-search-results
 waitress
