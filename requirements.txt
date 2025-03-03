@@ -1,0 +1,6 @@
+Flask
+speechrecognition
+pyttsx3
+langdetect
+serpapi
+waitress
