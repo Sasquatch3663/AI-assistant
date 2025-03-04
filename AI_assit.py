@@ -1,11 +1,16 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import speech_recognition as sr
 import pyttsx3
 from langdetect import detect
 from serpapi import GoogleSearch
 import os
 
+API_KEY = "12a0690a23d8d09af0c65223f0da3def0791295378c4e7897c0cfe5d6ba1bda2"
+
 app = Flask(__name__)
+
+CORS(app)
 
 def transcribe_audio():
     recognizer = sr.Recognizer()
@@ -38,7 +43,7 @@ def search_online(query):
     params = {
         "engine": "google",
         "q": query,
-        "api_key": os.getenv("SERPAPI_KEY")  # Use environment variable for API key
+        "api_key": "API_KEY"  # Use environment variable for API key
     }
     search = GoogleSearch(params)
     results = search.get_dict()
