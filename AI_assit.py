@@ -2,16 +2,15 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import speech_recognition as sr
 import pyttsx3
-from langdetect import detect
 from serpapi import GoogleSearch
 import os
 
-API_KEY = "12a0690a23d8d09af0c65223f0da3def0791295378c4e7897c0cfe5d6ba1bda2"
-
 app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend requests
 
-CORS(app)
+SERPAPI_KEY = os.getenv("SERPAPI_KEY")  # Use environment variable for security
 
+# Function to transcribe speech to text
 def transcribe_audio():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
@@ -27,6 +26,7 @@ def transcribe_audio():
     except sr.RequestError:
         return "Could not request results from Google Speech Recognition service"
 
+# Function to convert text to speech
 def text_to_speech(text, voice_gender='female'):
     engine = pyttsx3.init()
     voices = engine.getProperty('voices')
@@ -39,36 +39,52 @@ def text_to_speech(text, voice_gender='female'):
     engine.say(text)
     engine.runAndWait()
 
+# Function to perform an online search using SerpAPI
 def search_online(query):
+    if not SERPAPI_KEY:
+        return "Error: SERPAPI_KEY is missing"
+
     params = {
         "engine": "google",
         "q": query,
-        "api_key": "API_KEY"  # Use environment variable for API key
+        "api_key": SERPAPI_KEY
     }
+    
     search = GoogleSearch(params)
     results = search.get_dict()
+
     if results.get("organic_results"):
         return results["organic_results"][0]["snippet"]
+    
     return "No results found."
 
-@app.route('/transcribe', methods=['POST'])
-def transcribe():
-    user_query = transcribe_audio()
-    return jsonify({"query": user_query})
-
-@app.route('/search', methods=['POST'])
-def search():
+# Unified API endpoint for transcribe, search, and speak
+@app.route('/process', methods=['POST'])
+def process_request():
     data = request.json
-    query = data.get("query")
-    response = search_online(query)
-    return jsonify({"response": response})
+    action = data.get("action")
 
-@app.route('/speak', methods=['POST'])
-def speak():
-    data = request.json
-    text = data.get("text")
-    text_to_speech(text)
-    return jsonify({"message": "Text has been spoken."})
+    if not action:
+        return jsonify({"error": "Please provide an action (transcribe, search, speak)"}), 400
+
+    if action == "transcribe":
+        return jsonify({"query": transcribe_audio()})
+
+    elif action == "search":
+        query = data.get("query")
+        if not query:
+            return jsonify({"error": "Please provide a search query"}), 400
+        return jsonify({"response": search_online(query)})
+
+    elif action == "speak":
+        text = data.get("text")
+        if not text:
+            return jsonify({"error": "Please provide text to speak"}), 400
+        text_to_speech(text)
+        return jsonify({"message": "Text has been spoken."})
+
+    else:
+        return jsonify({"error": "Invalid action. Use 'transcribe', 'search', or 'speak'"}), 400
 
 from waitress import serve
 
