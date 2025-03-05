@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend requests
 
-SERPAPI_KEY = "12a0690a23d8d09af0c65223f0da3def0791295378c4e7897c0cfe5d6ba1bda2"  # Use environment variable for security
+SERPAPI_KEY = "30895d28ad8c06e61997f64a5b7a7c32f117e15dba79d4bed63662cb6a882f8c"  # Use environment variable for security
 
 # Function to transcribe speech to text
 def transcribe_audio():
